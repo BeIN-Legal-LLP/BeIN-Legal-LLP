@@ -1,0 +1,14 @@
+{
+  "name": "beinlegal-site",
+  "version": "1.0.0",
+  "description": "Static website for BeIN Legal LLP",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve public -l 3000",
+    "start": "npx serve public -l 3000",
+    "build": "echo 'No build step — static site. Vercel will serve /public directly.'"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
