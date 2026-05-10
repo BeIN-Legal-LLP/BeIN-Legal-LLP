@@ -42,39 +42,74 @@
     });
   });
 
-  /* ---------- Disclaimer modal ---------- */
-  // Bar Council of India guidelines require law firms to show a disclaimer
-  // before users see promotional content. We show it once per browser session
-  // and remember the choice in localStorage.
-  const STORAGE_KEY = 'bil_disclaimer_accepted';
-  const overlay = document.getElementById('disclaimer-overlay');
-  const agreeBtn = document.getElementById('disclaimer-agree');
-  const disagreeBtn = document.getElementById('disclaimer-disagree');
+  /* ---------- Consent flow: banner → modal → accept ---------- */
+  // Two-step pattern: a non-blocking banner appears at first visit. Clicking
+  // "I Accept" on the banner opens a modal with the full BCI disclaimer +
+  // privacy/cookies summary; the user must then click "I Agree" inside the
+  // modal to finalise acceptance.
+  const STORAGE_KEY = 'bil_consent_accepted';
+  const banner = document.getElementById('consent-banner');
+  const bannerAccept = document.getElementById('consent-accept');
+  const modal = document.getElementById('disclaimer-overlay');
+  const modalAgree = document.getElementById('disclaimer-agree');
+  const modalDisagree = document.getElementById('disclaimer-disagree');
 
-  if (overlay && !localStorage.getItem(STORAGE_KEY)) {
-    // Show on load
+  function openModal() {
+    if (!modal) return;
+    modal.classList.add('is-visible');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    if (!modal) return;
+    modal.classList.remove('is-visible');
+    document.body.style.overflow = '';
+  }
+
+  function hideBanner() {
+    if (banner) banner.classList.remove('is-visible');
+  }
+
+  if (banner && !localStorage.getItem(STORAGE_KEY)) {
     requestAnimationFrame(function () {
-      overlay.classList.add('is-visible');
-      document.body.style.overflow = 'hidden';
+      banner.classList.add('is-visible');
     });
   }
 
-  if (agreeBtn) {
-    agreeBtn.addEventListener('click', function () {
+  if (bannerAccept) {
+    bannerAccept.addEventListener('click', openModal);
+  }
+
+  if (modalAgree) {
+    modalAgree.addEventListener('click', function () {
       localStorage.setItem(STORAGE_KEY, '1');
-      overlay.classList.remove('is-visible');
-      document.body.style.overflow = '';
+      closeModal();
+      hideBanner();
     });
   }
 
-  if (disagreeBtn) {
-    disagreeBtn.addEventListener('click', function () {
-      // If the user disagrees, send them away from the site (per BCI norms).
+  if (modalDisagree) {
+    modalDisagree.addEventListener('click', function () {
+      // BCI norms: a user who disagrees should not browse the site
       window.location.href = 'https://www.google.com/';
     });
   }
 
   /* ---------- Auto-update footer year ---------- */
-  const yearEl = document.getElementById('current-year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  document.querySelectorAll('#current-year, .js-current-year').forEach(function (el) {
+    el.textContent = new Date().getFullYear();
+  });
+
+  /* ---------- Interactive values: tap to expand ---------- */
+  document.querySelectorAll('.value-tile').forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      tile.classList.toggle('is-open');
+    });
+    tile.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        tile.classList.toggle('is-open');
+      }
+    });
+  });
 })();
